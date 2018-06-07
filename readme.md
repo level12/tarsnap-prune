@@ -8,7 +8,7 @@ Usage
 -----
 
 ```shell
-$ ./tarsnap-prune prune
+$ tarsnap-prune prune
 INFO: Keeping 89 archives
 INFO: Deleting 384 archives from 2017-02-21 to 2018-03-09
 Delete archives?  ("yes" proceeds, anything else aborts):
@@ -40,24 +40,6 @@ $ sudo -i
 # . /opt/tarsnap-prune-venv/bin/activate
 # cd /opt/tarsnap-prune-src/
 # pipenv install
+# ln -s /opt/tarsnap-prune-src/tarsnap-prune /usr/local/sbin/
 
-Fsck
------
-
-You may get errors when trying to delete an archive:
-
-```
-plumbum.commands.processes.ProcessExecutionError: Command line: ['/usr/bin/tarsnap', '--cachedir', '/tmp/tarsnap-cache', '--keyfile', '/tmp/server-name-tarsnap.key', '-d', '-f', 'scooby_daily_backup_scooby_20170221-150108']
-Exit code: 1
-Stderr:  | tarsnap: Sequence number mismatch: Run --fsck
-         | tarsnap: Error deleting archive
-         | tarsnap: Error exit delayed from previous errors.
-```
-
-In that case, it's probably easiest to run the fsck from the server, although you could run it
-locally if you wanted.
-
-```
-rsyring@loftey$ ssh scooby
-rsyring@scooby$ sudo tarsnap --fsck
-```
+It would be better if this was setup in Ansible...but it's not yet.  :P
