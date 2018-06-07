@@ -47,11 +47,10 @@ def prune(ignore_cache, keep_days):
         log.info('Aborting')
         return
 
-    log.info('Deleting archives...')
+    log.info('Deleting archives, this can take some time...')
     for archive_name in to_delete.names:
-        result = tarsnap('-d', '-f', archive_name)
-        print(result)
-        return
+        log.info('Deleting {}...'.format(archive_name))
+        tarsnap('-d', '-f', archive_name)
 
 
 def date_name_pair(archive_name):
