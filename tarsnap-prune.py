@@ -28,9 +28,9 @@ def prune(ignore_cache, keep_days):
     logging.basicConfig(format=log_format, level=logging.INFO)
 
     ts = dt.date.today()
-    cache_fname = f'tarsnap-prune.{ts}'
+    cache_fname = 'tarsnap-prune.{}'.format(ts)
 
-    cache_fpath = Path(f'/tmp/{cache_fname}')
+    cache_fpath = Path(f'/tmp/{}'.format(cache_fname}))
 
     if ignore_cache or not cache_fpath.exists():
         log.info('Getting archives from tarsnap servers...')
