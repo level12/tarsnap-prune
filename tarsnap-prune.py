@@ -49,7 +49,7 @@ def prune(ignore_cache, keep_days):
 
     log.info('Deleting archives...')
     for archive_name in to_delete.names:
-        result = tarsnap(key_fpath, '-d', '-f', archive_name)
+        result = tarsnap('-d', '-f', archive_name)
         print(result)
         return
 
