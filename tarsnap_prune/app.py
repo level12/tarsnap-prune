@@ -4,23 +4,31 @@ from collections import namedtuple
 import datetime as dt
 import logging
 from pathlib import Path
+import subprocess
 
 import arrow
 import click
-from plumbum.cmd import tarsnap
 
 log = logging.getLogger(__name__)
 
 ToDelete = namedtuple('ToDelete', 'keep delete first_date last_date names')
 
 
+def sub_run(*args, **kwargs):
+    kwargs['check'] = True
+    args = kwargs.pop('args', args)
+    return subprocess.run(args, **kwargs)
+
+
 @click.group()
-def main():
+@click.option('--debug', is_flag=True, default=False)
+def cli(debug):
     log_format = '%(levelname)s: %(message)s'
+    level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-@main.command()
+@cli.command()
 @click.argument('keep_days', default=90)
 @click.option('--ignore-cache', is_flag=True, default=False)
 def prune(ignore_cache, keep_days):
@@ -34,10 +42,13 @@ def prune(ignore_cache, keep_days):
 
     if ignore_cache or not cache_fpath.exists():
         log.info('Getting archives from tarsnap servers...')
-        (tarsnap['--list-archives'] > str(cache_fpath))()
+        with cache_fpath.open('w') as cache_fo:
+            sub_run('tarsnap', '--list-archives', stdout=cache_fo)
 
     with cache_fpath.open() as fo:
-        lines = fo.read().splitlines()
+        lines = fo.read().strip().splitlines()
+    if not lines:
+        log.error('No output from: tarsnap --list-archives')
     to_delete = to_delete_archives(lines, keep_days)
 
     log.info('Keeping {.keep} archives'.format(to_delete))
@@ -48,9 +59,11 @@ def prune(ignore_cache, keep_days):
         return
 
     log.info('Deleting archives, this can take some time...')
-    for archive_name in to_delete.names:
-        log.info('Deleting {}...'.format(archive_name))
-        tarsnap('-d', '-f', archive_name)
+    # Per https://www.tarsnap.com/improve-speed.html, using multiple -f arguments is faster than
+    # multiple calls.
+    tarsnap_cmd = ['tarsnap', '-d']
+    tarsnap_cmd += [arg for name in to_delete.names for arg in ('-f', name)]
+    sub_run(args=tarsnap_cmd)
 
 
 def date_name_pair(archive_name):
@@ -77,4 +90,4 @@ def to_delete_archives(archive_names, keep_days):
 
 
 if __name__ == '__main__':
-    main()
+    cli()

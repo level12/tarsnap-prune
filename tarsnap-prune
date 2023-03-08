@@ -1,3 +1,0 @@
-#!/bin/bash
-
-/opt/tarsnap-prune-venv/bin/python /opt/tarsnap-prune-src/tarsnap-prune.py "$@"

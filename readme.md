@@ -25,22 +25,15 @@ $ ./tarsnap-prune prune 30
 
 ### List Archives Cache
 
-By default the command caches the tarsnap `list-archives` output based on the current date (since that
-command can take awhile to run).  You can use `--ignore-cache` to override this behavior.
+By default the command caches the tarsnap `list-archives` output based on the current date (since
+that command can take awhile to run).  You can use `--ignore-cache` to override this behavior.
 
 
-Install
--------
+Development
+-----------
 
-```
-$ ssh -A server
-$ sudo -E git clone git@github.com:level12/tarsnap-prune.git /opt/tarsnap-prune-src
-$ sudo -i
-# virtualenv /opt/tarsnap-prune-venv
-# . /opt/tarsnap-prune-venv/bin/activate
-# cd /opt/tarsnap-prune-src/
-# pipenv install
-# ln -s /opt/tarsnap-prune-src/tarsnap-prune /usr/local/sbin/
-```
-
-It would be better if this was setup in Ansible...but it's not yet.  :P
+* Intended to be distributed as a shiv-built pyz.  Use `shiv/build` to create one.
+* Can use `scripts/rsync-pyz` to watch for changes to files that would affect the .pyz, build it,
+    and rsync it to a server: `./scripts/rsync-pyz circus /home/rsyring/bin`
+* Once it's working well on a server, "install" with:
+    `sudo mv tarsnap-prune.pyz /usr/local/bin/tarsnap-prune`

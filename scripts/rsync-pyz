@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import pathlib
+import subprocess
+import threading
+
+import click
+
+scripts_dpath = pathlib.Path(__file__).parent
+pkg_dpath = scripts_dpath.parent
+app_dpath = pkg_dpath.joinpath('tarsnap-prune')
+pyz_fname = 'tarsnap-prune.pyz'
+
+
+class Debouncer:
+    """ Creates a callable that will wait to make the real call to `call_this` until
+        we aren't getting called anymore for `wait_time`.
+
+        We use this to smooth out the scale readings and avoid getting intermediate readings.  The
+        scale reading has to be stable for a period of time before calling the on change event.
+    """
+
+    def __init__(self, call_this, wait_time):
+        self.call_this = call_this
+        self.wait_time = wait_time
+        self.timer = None
+
+    def __call__(self, *args, **kwargs):
+        if self.timer is not None:
+            self.timer.cancel()
+
+        def timer_func():
+            self.timer = None
+            self.call_this(*args, **kwargs)
+
+        self.timer = threading.Timer(self.wait_time, timer_func)
+        self.timer.start()
+
+
+def sub_run(*args, **kwargs):
+    kwargs['check'] = True
+    return subprocess.run(args, cwd=pkg_dpath, **kwargs)
+
+
+
+@click.command()
+@click.argument('server')
+@click.argument('server_path')
+def rsync_pyz(server, server_path):
+
+    def build_and_send_pyz():
+        sub_run('make', '-C', 'requirements')
+        sub_run('./shiv/build')
+        sub_run(f'rsync', '-hav', f'{pkg_dpath}/{pyz_fname}', f'{server}:{server_path}')
+
+    # inotifywatch was sending two modify events in quick succession for one file save.
+    bas_pyz = Debouncer(build_and_send_pyz, 0.25)
+
+    inotify_cmd = ('inotifywait', '-m', '-e', 'modify', '-e', 'create',
+        'scripts/rsync-pyz', 'requirements/common.in', 'tarsnap_prune', 'shiv'
+    )
+    proc = subprocess.Popen(inotify_cmd, stdout=subprocess.PIPE, cwd=pkg_dpath)
+    for line in proc.stdout:
+        bas_pyz()
+
+
+if __name__ == '__main__':
+    rsync_pyz()

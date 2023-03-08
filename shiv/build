@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import pathlib
+
+import click
+from shiv_utils import build
+
+shiv_dpath = pathlib.Path(__file__).parent
+pkg_dpath = shiv_dpath.parent
+pyz_fpath = pkg_dpath.joinpath('tarsnap-prune.pyz')
+
+
+@click.command()
+@click.option('--force-deps', is_flag=True, default=False, help='Force re-install of deps')
+def shiv_build(force_deps):
+    build(
+        pkg_dpath,
+        'requirements/common.txt',
+        'tarsnap_prune',
+        'tarsnap_prune.app:cli',
+        pyz_fpath=pyz_fpath,
+        preamble_fpath=shiv_dpath.joinpath('preamble.py'),
+        force_deps=force_deps,
+    )
+
+    print(f'Saved at {pyz_fpath.name}')
+
+if __name__ == '__main__':
+    shiv_build()

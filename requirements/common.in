@@ -1,0 +1,6 @@
+# Some servers running on Python 3.6 which doesn't have typing extensions which arrow 1.0+ uses.
+arrow<1.0
+click
+
+shiv
+https://github.com/level12/shiv-utils/archive/master.tar.gz#egg=shiv-utils

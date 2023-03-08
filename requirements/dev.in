@@ -1,0 +1,8 @@
+# These are the requirements needed to do development work on this project in addition to running
+# the tests
+-r common.txt
+
+shiv
+
+# Needed for the cleanup in our shiv preamble.
+https://github.com/level12/shiv-utils/archive/master.tar.gz#egg=shiv-utils
