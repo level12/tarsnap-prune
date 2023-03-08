@@ -47,8 +47,14 @@ def prune(ignore_cache, keep_days):
 
     with cache_fpath.open() as fo:
         lines = fo.read().strip().splitlines()
+
     if not lines:
-        log.error('No output from: tarsnap --list-archives')
+        log.error(
+            'No archives provided by: tarsnap --list-archives.  Try changing the number of'
+            ' days to keep.'
+        )
+        return
+
     to_delete = to_delete_archives(lines, keep_days)
 
     log.info('Keeping {.keep} archives'.format(to_delete))
